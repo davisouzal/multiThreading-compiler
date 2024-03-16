@@ -1,6 +1,7 @@
 if __name__ == "__main__":
     import sys
     from lexer import Lexer
+    from interpreter import Interpreter
 
     if len(sys.argv) != 2:
         print("Usage: python MiniPar.py example.mp")
@@ -18,6 +19,8 @@ if __name__ == "__main__":
     # Tokenize the source code
     tokens = lexer.tokenize(source_code)
     
-    # Print the tokens (for demonstration purposes)
-    for token in tokens:
-        print(token)
+    interpreter = Interpreter(tokens)
+        
+    result = interpreter.interpret()
+
+    print("Result:", result)

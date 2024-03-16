@@ -3,12 +3,11 @@ class Token:
         self.type = type
         self.value = value
 
-    def __str__(self):
-        return f"Token({self.type}, {self.value})"
+    def tuple(self):
+        return [self.type, self.value]
     
 class Lexer:
     def __init__(self):
-        # Define token types
         self.token_types = {
             '+': 'PLUS',
             '-': 'MINUS',
@@ -21,21 +20,23 @@ class Lexer:
             '}': 'R_BRACE',
             '=': 'EQUALS',
             '>=': 'GREATER_EQUAL',
-            '==': 'EQUAL_EQUAL',   # Treat '==' as a single token
+            '==': 'EQUAL_EQUAL',  
             '<=': 'LESS_EQUAL',
             '!=': 'NOT_EQUAL',
             '>': 'GREATER',
             '<': 'LESS',
             'true': 'BOOL_TRUE',
             'false': 'BOOL_FALSE',
-            'int': 'INT_TYPE',
-            'bool': 'BOOL_TYPE',
-            'string': 'STRING_TYPE',
+            'int': 'INT',
+            'bool': 'BOOL',
+            'string': 'STRING',
             'par': 'PAR',
             'seq': 'SEQ',
             'if': 'IF',
             'else': 'ELSE',
-            'while': 'WHILE'
+            'while': 'WHILE',
+            'print': 'PRINT',
+            'input': 'INPUT',
         }
 
     def tokenize(self, source_code):
@@ -77,10 +78,9 @@ class Lexer:
                     else:
                         tokens.append(Token('IDENTIFIER', current_word))
                     current_word = ''
-                # Check if the next character forms a combined token
                 if i < len(source_code) - 1 and source_code[i:i+2] in self.token_types:
                     tokens.append(Token(self.token_types[source_code[i:i+2]], source_code[i:i+2]))
-                    i += 1  # Move to the next character
+                    i += 1
                 else:
                     tokens.append(Token(self.token_types[char], char))
             elif char.isspace():
@@ -100,7 +100,7 @@ class Lexer:
             else:
                 raise Exception(f"Invalid character: {char}")
 
-            i += 1
+            i += 1 
 
         if current_number:
             tokens.append(Token('INT', int(current_number)))
@@ -115,5 +115,7 @@ class Lexer:
                 tokens.append(Token('IDENTIFIER', current_word))
         elif current_string:
             tokens.append(Token('STRING', current_string))
+            
+        tokens.append(Token('EOF', 'EOF'))
 
         return tokens

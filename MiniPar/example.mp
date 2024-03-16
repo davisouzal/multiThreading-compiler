@@ -1,6 +1,7 @@
-seq teste {
+seq{
 
-    int i = 1;
+    int a = 6 * 5;
+    int i = 9 * a;
 
     while(i <= 20) {
         i = i + 1;
