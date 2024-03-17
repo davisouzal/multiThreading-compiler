@@ -65,7 +65,29 @@ def intParser(tokens, symbol_table):
     else:
         #TODO throw error
         return "Syntax Error"
-     
+
+
+def indenParser(tokens, symbol_table):   
+    identifier_name = tokens[0].value
+    
+    if tokens[1].type == 'EQUALS':        
+        expr = []
+        i = 2
+        if tokens[2].type == 'INPUT':
+            symbol_table.set_value(identifier_name, input())
+        else:
+            while (tokens[i].type != 'SEMICOLON'):             
+                expr.append(tokens[i])
+                i += 1
+
+            symbol_table.set_value(identifier_name, parseExpr(expr, symbol_table))
+        
+    elif tokens[1].type == 'SEMICOLON':
+        return
+    
+    else:
+        #TODO throw error
+        return "Syntax Error"     
 
 def STRING(tokens):
     pass
@@ -77,22 +99,21 @@ def IF(condition, tokens):
     pass
 
 def whileParser(conditions, tokens, symbol_table):
-    print("conditions")
-    for condition in conditions:
-        print(condition.value)
+    while(parseExpr(conditions, symbol_table)):
     
-    print("tokens")
-    for token in tokens:
-        print(token.value)
+        interpreter = Interpreter(tokens, symbol_table)
+        interpreter.interpret()
         
 def block_stmts(block_tokens):        
     interpreter = Interpreter(block_tokens)
     interpreter.interpret()
 
 class Interpreter:
-    def __init__(self, tokens):
+    def __init__(self, tokens, global_symbol_table=None):
         self.tokens = tokens
         self.symbol_table = SymbolTable()
+        if global_symbol_table:
+            self.symbol_table.symbols = global_symbol_table.symbols
         
     def interpret(self):
         
@@ -150,7 +171,16 @@ class Interpreter:
                 thread = threading.Thread(target=lambda: block_stmts(block_tokens))
                 thread.start()
             elif token.type == 'IDENTIFIER':
-                pass    
+                line_tokens = [token]
+                
+                while self.tokens[i].type != 'SEMICOLON':
+                    line_tokens.append(self.tokens[i])
+                    i += 1
+                    
+                line_tokens.append(self.tokens[i])
+                i += 1
+                
+                indenParser(line_tokens, self.symbol_table)  
             
             elif token.type == 'INT':
                 line_tokens = []
