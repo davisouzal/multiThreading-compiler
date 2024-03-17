@@ -1,12 +1,15 @@
-int x = 20;
-int y = 20;
+print("Digite o numero do da seuancia de fibonacci que quer achar:");
+int x = input;
+
+print("Digite o numero para calcular o fatorial:")
+int y = input;
 
 par{
     int a = 1;
     int b = 1;
     print(a);
     print(b);
-    int i = 1;
+    int i = 2;
     int j = x;
     while(i < j) {
         c = a + b;

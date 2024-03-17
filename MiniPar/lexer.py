@@ -37,6 +37,11 @@ class Lexer:
             'while': 'WHILE',
             'print': 'PRINT',
             'input': 'INPUT',
+            'chan': 'C_CHANNEL',
+            'client': 'CLIENT',
+            'server':'SERVER',
+            'send': 'SEND',
+            'receive': 'RECEIVE'
         }
 
     def tokenize(self, source_code):

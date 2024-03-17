@@ -22,5 +22,3 @@ if __name__ == "__main__":
     interpreter = Interpreter(tokens)
         
     result = interpreter.interpret()
-
-    print("Result:", result)
