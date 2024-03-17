@@ -12,14 +12,18 @@ class SymbolTable:
     def __init__(self):
         self.symbols = {}
 
-    def add_symbol(self, name, value=None):
-        self.symbols[name] = value
+    def add_symbol(self, name, type_, value=None):
+        self.symbols[name] = (value, type_)
 
     def get_value(self, name):
-        return self.symbols.get(name)
+        return self.symbols.get(name, (None, None))[0]
+
+    def get_type(self, name):
+        return self.symbols.get(name, (None, None))[1]
 
     def set_value(self, name, value):
-        self.symbols[name] = value
+        current_type = self.get_type(name)
+        self.symbols[name] = (value, current_type)
 
 def parseExpr(expr, symbol_table):
     if len(expr) == 0:
@@ -39,13 +43,24 @@ def parseExpr(expr, symbol_table):
         
     return eval(expr_str)
 
+def parseStr(expr, symbol_table):    
+    expr_str = ''
+    
+    for token in expr:
+        if token.type == 'IDENTIFIER':
+            expr_str += str(symbol_table.get_value(token.value))
+        else:
+            expr_str += str(token.value)
+        
+    return expr_str
+
 def intParser(tokens, symbol_table):
     if tokens[0].type != 'IDENTIFIER':
         #TODO throw error
         return "Syntax Error"
     
     identifier_name = tokens[0].value
-    symbol_table.add_symbol(identifier_name)
+    symbol_table.add_symbol(identifier_name, 'int')
     
     if tokens[1].type == 'EQUALS':        
         expr = []
@@ -79,8 +94,11 @@ def indenParser(tokens, symbol_table):
             while (tokens[i].type != 'SEMICOLON'):             
                 expr.append(tokens[i])
                 i += 1
-
-            symbol_table.set_value(identifier_name, parseExpr(expr, symbol_table))
+            
+            if symbol_table.get_type(identifier_name) == 'str':
+                symbol_table.set_value(identifier_name, parseStr(expr, symbol_table))
+            else:
+                symbol_table.set_value(identifier_name, parseExpr(expr, symbol_table))
         
     elif tokens[1].type == 'SEMICOLON':
         return
@@ -89,13 +107,61 @@ def indenParser(tokens, symbol_table):
         #TODO throw error
         return "Syntax Error"     
 
-def STRING(tokens):
-    pass
+def strParser(tokens, symbol_table):
+    if tokens[0].type != 'IDENTIFIER':
+        #TODO throw error
+        return "Syntax Error"
+    
+    identifier_name = tokens[0].value
+    symbol_table.add_symbol(identifier_name, 'str')
+    
+    if tokens[1].type == 'EQUALS':        
+        expr = []
+        i = 2
+        if tokens[2].type == 'INPUT':
+            symbol_table.set_value(identifier_name, input())
+        else:
+            while (tokens[i].type != 'SEMICOLON'):             
+                expr.append(tokens[i])
+                i += 1
 
-def BOOL(tokens):
-    pass
+            symbol_table.set_value(identifier_name, parseStr(expr, symbol_table))
+        
+    elif tokens[1].type == 'SEMICOLON':
+        return
+    
+    else:
+        #TODO throw error
+        return "Syntax Error"
 
-def IF(condition, tokens):
+def boolParser(tokens, symbol_table):
+    if tokens[0].type != 'IDENTIFIER':
+        #TODO throw error
+        return "Syntax Error"
+    
+    identifier_name = tokens[0].value
+    symbol_table.add_symbol(identifier_name, 'bool')
+    
+    if tokens[1].type == 'EQUALS':        
+        expr = []
+        i = 2
+        if tokens[2].type == 'INPUT':
+            symbol_table.set_value(identifier_name, input())
+        else:
+            while (tokens[i].type != 'SEMICOLON'):             
+                expr.append(tokens[i])
+                i += 1
+
+            symbol_table.set_value(identifier_name, parseExpr(expr, symbol_table))
+        
+    elif tokens[1].type == 'SEMICOLON':
+        return
+    
+    else:
+        #TODO throw error
+        return "Syntax Error"
+
+def IF(condition, tokens_if, tokens_else):
     pass
 
 def whileParser(conditions, tokens, symbol_table):
@@ -104,8 +170,8 @@ def whileParser(conditions, tokens, symbol_table):
         interpreter = Interpreter(tokens, symbol_table)
         interpreter.interpret()
         
-def block_stmts(block_tokens):        
-    interpreter = Interpreter(block_tokens)
+def block_stmts(block_tokens, symbol_table):        
+    interpreter = Interpreter(block_tokens, symbol_table)
     interpreter.interpret()
 
 class Interpreter:
@@ -144,7 +210,7 @@ class Interpreter:
 
                 block_tokens.append(Token('EOF', 'EOF'))
 
-                block_stmts(block_tokens)
+                block_stmts(block_tokens, self.symbol_table)
                 
             elif token.type == 'PAR':
                 if self.tokens[i].type != 'L_BRACE':
@@ -168,8 +234,9 @@ class Interpreter:
 
                 block_tokens.append(Token('EOF', 'EOF'))
                 
-                thread = threading.Thread(target=lambda: block_stmts(block_tokens))
+                thread = threading.Thread(target=lambda: block_stmts(block_tokens, self.symbol_table))
                 thread.start()
+                
             elif token.type == 'IDENTIFIER':
                 line_tokens = [token]
                 
@@ -194,9 +261,27 @@ class Interpreter:
                 intParser(line_tokens, self.symbol_table)
                     
             elif token.type == 'BOOL':
-                pass         
+                line_tokens = []
+                while self.tokens[i].type != 'SEMICOLON':
+                    line_tokens.append(self.tokens[i])
+                    i += 1
+                    
+                line_tokens.append(self.tokens[i])
+                i += 1
+                
+                boolParser(line_tokens, self.symbol_table)
+                      
             elif token.type == 'STRING':
-                pass
+                line_tokens = []
+                while self.tokens[i].type != 'SEMICOLON':
+                    line_tokens.append(self.tokens[i])
+                    i += 1
+                    
+                line_tokens.append(self.tokens[i])
+                i += 1
+                
+                strParser(line_tokens, self.symbol_table)
+                
             elif token.type == 'PRINT':
                 if self.tokens[i].type != 'L_PAREN':
                     return('Syntax Error')
@@ -219,9 +304,12 @@ class Interpreter:
                     
                     i += 1;
                 i += 1;  
-                    
+                
+                
                 if (len(expr_tokens) == 1) and (expr_tokens[0].type != 'IDENTIFIER'):
                     print(expr_tokens[0].value)
+                elif (len(expr_tokens) == 1) and (expr_tokens[0].type == 'IDENTIFIER'):
+                    print(self.symbol_table.get_value(expr_tokens[0].value))
                 else:
                     print(parseExpr(expr_tokens, self.symbol_table))               
                     
