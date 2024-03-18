@@ -8,8 +8,6 @@ Make sure you have the following dependencies installed:
 
 - Python 3.x
 
-## Installation
-
 ## Usage
 
 To use the compiler, follow these steps:
@@ -62,9 +60,4 @@ Here's an example of a simple source code file:
 seq {
     int x = 5;
     print(x);
-    
-    par {
-        int y = 10;
-        print(y);
-    }
 }
