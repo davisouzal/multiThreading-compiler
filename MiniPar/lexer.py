@@ -56,6 +56,11 @@ class Lexer:
         while i < len(source_code):
             char = source_code[i]
 
+            if char == '#': 
+                while i < len(source_code) and source_code[i] != '\n':
+                    i += 1
+                continue
+
             if char == '"':
                 if not inside_string:
                     inside_string = True

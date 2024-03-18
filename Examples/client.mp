@@ -1,9 +1,11 @@
-print("Digite o numero que representa o operador (1 para +, 2 para -, 3para * ou 4 para /):")
+print("Digite o numero que representa o operador (1 para +, 2 para -, 3 para * ou 4 para /):")
 int op = input;
 print("Digite um numero:")
 int a = input;
 print("Digite um numero:")
 int b = input;
+
+# teste teste
 
 chan teste "127.0.0.1" "5546" client {
     teste send op;

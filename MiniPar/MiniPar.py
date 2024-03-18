@@ -17,8 +17,21 @@ if __name__ == "__main__":
         source_code = file.read()
 
     # Tokenize the source code
-    tokens = lexer.tokenize(source_code)
-    
-    interpreter = Interpreter(tokens)
-        
-    result = interpreter.interpret()
+    try:
+        lexer = Lexer()
+        tokens = lexer.tokenize(source_code)
+    except Exception as e:
+        print("Lexer error:", e)
+        tokens = []
+
+    try:
+        interpreter = Interpreter(tokens)
+    except Exception as e:
+        print("Interpreter initialization error:", e)
+        interpreter = None
+
+    if interpreter:
+        try:
+            result = interpreter.interpret()
+        except Exception as e:
+            print("Interpreter error:", e)
